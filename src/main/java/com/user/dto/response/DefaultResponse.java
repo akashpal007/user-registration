@@ -1,6 +1,7 @@
 package com.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.user.common.Status;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultResponse {
-	String status;
+	Status status;
 	String details;
 }
