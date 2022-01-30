@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ErrorDetails {
+public class ExceptionDetails {
 	private String message;
 	private String details;
 	private Date timestamp;

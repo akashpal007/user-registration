@@ -47,7 +47,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 		log.info("Exception : " + ex.toString());
 		ex.printStackTrace();
 
-		ErrorDetails exceptionEntity = new ErrorDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
 				request.getDescription(false), new Date());
 		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR,
 				request);
@@ -60,7 +60,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 		log.info("InvalidDataAccessApiUsageException : " + ex.toString());
 		ex.printStackTrace();
 
-		ErrorDetails exceptionEntity = new ErrorDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
 				request.getDescription(false), new Date());
 		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
 	}
@@ -82,17 +82,17 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 				message = objError.getDefaultMessage();
 			}
 		}
-		ErrorDetails response = new ErrorDetails(message, request.getDescription(false), new Date());
+		ExceptionDetails response = new ExceptionDetails(message, request.getDescription(false), new Date());
 		return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
 			HttpStatus status, WebRequest request) {
-		if (!(body instanceof ErrorDetails)) {
+		if (!(body instanceof ExceptionDetails)) {
 			log.info("System Exception : " + ex.toString());
 			ex.printStackTrace();
-			body = new ErrorDetails(ex.getMessage(), request.getDescription(false), new Date());
+			body = new ExceptionDetails(ex.getMessage(), request.getDescription(false), new Date());
 		}
 
 		if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
