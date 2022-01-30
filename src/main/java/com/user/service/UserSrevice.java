@@ -1,4 +1,5 @@
 package com.user.service;
+
 /**
  * @author A.K.Pal.
  * 
@@ -13,11 +14,11 @@ import com.user.dto.response.UserLoginResponseDto;
 
 public interface UserSrevice {
 
-	DefaultResponse userRegistration(UserRegistrationRequestDto user);
+	DefaultResponse userRegistration(UserRegistrationRequestDto user) throws Exception;
 
-	DefaultResponse userVerifyOtp(String email, String otp);
+	DefaultResponse userVerifyOtp(String email, String otp) throws Exception;
 
-	UserLoginResponseDto userlogin(@Valid UserLoginRequestDto userLoginRequestDto);
+	UserLoginResponseDto userlogin(@Valid UserLoginRequestDto userLoginRequestDto) throws Exception;
 
 	UserDetailsResponseDto userDetails(Long userId, String accessToken) throws Exception;
 

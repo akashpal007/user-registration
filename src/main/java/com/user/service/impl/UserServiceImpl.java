@@ -1,5 +1,6 @@
 package com.user.service.impl;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,20 +35,27 @@ public class UserServiceImpl implements UserSrevice {
 	TwoFactor twoFactor;
 
 	@Override
-	public DefaultResponse userRegistration(UserRegistrationRequestDto userRegReq) {
-		/* UserRequestDto MAP TO UserEntity */
-		UserEntity userEntity = mapUserRequestDtoToUserEntity(userRegReq);
-		/* Save data in User db */
-		userRepo.save(userEntity);
+	public DefaultResponse userRegistration(UserRegistrationRequestDto userRegReq) throws Exception {
+		/* Save UserRegistrationRequestDto in database */
+		saveUserRegistrationData(userRegReq);
+
 		/* Send OTP */
-		TwoFactorResponse twoFactorResponse = twoFactor.sendingSmsOtp(userEntity.getMobile());
+		TwoFactorResponse twoFactorResponse = twoFactor.sendingSmsOtp(userRegReq.getMobileNumber());
 		log.info("Send OTP Response: " + twoFactorResponse);
 
 		return new DefaultResponse(Status.SUCCESS, "User onboard successfully. Please verify the user.");
 	}
 
+	@Transactional
+	private void saveUserRegistrationData(UserRegistrationRequestDto userRegReq) {
+		/* UserRequestDto MAP TO UserEntity */
+		UserEntity userEntity = mapUserRequestDtoToUserEntity(userRegReq);
+		/* Save data in User db */
+		userRepo.save(userEntity);
+	}
+
 	@Override
-	public DefaultResponse userVerifyOtp(String email, String otp) {
+	public DefaultResponse userVerifyOtp(String email, String otp) throws Exception {
 		/* Get user data from db */
 		UserEntity userEntity = userRepo.findByEmail(email).orElse(null);
 
@@ -59,7 +67,7 @@ public class UserServiceImpl implements UserSrevice {
 	}
 
 	@Override
-	public UserLoginResponseDto userlogin(@Valid UserLoginRequestDto userLoginRequestDto) {
+	public UserLoginResponseDto userlogin(@Valid UserLoginRequestDto userLoginRequestDto) throws Exception {
 		/* Get user data from db */
 		UserEntity userEntity = userRepo.findByEmail(userLoginRequestDto.getEmail()).orElse(null);
 
@@ -76,18 +84,16 @@ public class UserServiceImpl implements UserSrevice {
 					userRepo.save(userEntity);
 
 					/* Success response with new access token */
-					return new UserLoginResponseDto("Verified User", newToken,
+					return new UserLoginResponseDto(userEntity.getId(), "Verified User", newToken,
 							"New access token generated successfully");
 				} else {
-					/* Success response with new access token */
-					return new UserLoginResponseDto("Verified User", null,
-							"Password mismatch. Please enter your currect password.");
+					throw new Exception("Verified User. Password mismatch. Please enter your currect password.");
 				}
 			} else {
-				return new UserLoginResponseDto("Verification Pendingr", null, "OTP authentication is pending.");
+				throw new Exception("Verification Pending. OTP authentication is pending.");
 			}
 		} else {
-			return new UserLoginResponseDto("Unknown User", null, "The user is not registered with the system.");
+			throw new Exception("Unknown User. The user is not registered with the system.");
 		}
 
 	}
@@ -141,7 +147,7 @@ public class UserServiceImpl implements UserSrevice {
 			throw new Exception("Unknown User. The user is not registered with the system.");
 		}
 	}
-	
+
 	/**
 	 * @param UserRegistrationRequestDto
 	 * @return UserEntity

@@ -31,21 +31,21 @@ public class UserController {
 	Util util;
 
 	@PostMapping("/registration")
-	public DefaultResponse userRegistration(@Valid @RequestBody UserRegistrationRequestDto userRegReq) {
+	public DefaultResponse userRegistration(@Valid @RequestBody UserRegistrationRequestDto userRegReq) throws Exception {
 		log.info("User Registration UserRequestDto: " + userRegReq);
 
 		return userSrevice.userRegistration(userRegReq);
 	}
 
 	@PostMapping("/verify-otp")
-	public DefaultResponse userVerifyOtp(@RequestParam String email, @RequestParam String otp) {
+	public DefaultResponse userVerifyOtp(@RequestParam String email, @RequestParam String otp) throws Exception {
 		log.info("User Verify Otp email: " + email + "|| otp: " + otp);
 		
 		return userSrevice.userVerifyOtp(email, otp);
 	}
 
 	@PostMapping("/login")
-	public UserLoginResponseDto userlogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
+	public UserLoginResponseDto userlogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) throws Exception {
 		log.info("User login UserLoginRequestDto: " + userLoginRequestDto);
 
 		return userSrevice.userlogin(userLoginRequestDto);
