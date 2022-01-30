@@ -46,23 +46,6 @@ public class UserServiceImpl implements UserSrevice {
 		return new DefaultResponse(Status.SUCCESS, "User onboard successfully. Please verify the user.");
 	}
 
-	/**
-	 * @param UserRegistrationRequestDto
-	 * @return UserEntity
-	 */
-	private UserEntity mapUserRequestDtoToUserEntity(UserRegistrationRequestDto userRegReq) {
-		UserEntity userEntity = new UserEntity();
-		userEntity.setEmail(userRegReq.getEmail());
-		userEntity.setName(userRegReq.getName());
-		userEntity.setMobile(userRegReq.getMobileNumber());
-		userEntity.setDateOfBirth(userRegReq.getDateOfBirth());
-		userEntity.setAddress(userRegReq.getAddress());
-		/* Encoder Password */
-		String password = bCryptPasswordEncoder.encode(userRegReq.getPassword());
-		userEntity.setPassword(password);
-		return userEntity;
-	}
-
 	@Override
 	public DefaultResponse userVerifyOtp(String email, String otp) {
 		/* Get user data from db */
@@ -158,7 +141,28 @@ public class UserServiceImpl implements UserSrevice {
 			throw new Exception("Unknown User. The user is not registered with the system.");
 		}
 	}
+	
+	/**
+	 * @param UserRegistrationRequestDto
+	 * @return UserEntity
+	 */
+	private UserEntity mapUserRequestDtoToUserEntity(UserRegistrationRequestDto userRegReq) {
+		UserEntity userEntity = new UserEntity();
+		userEntity.setEmail(userRegReq.getEmail());
+		userEntity.setName(userRegReq.getName());
+		userEntity.setMobile(userRegReq.getMobileNumber());
+		userEntity.setDateOfBirth(userRegReq.getDateOfBirth());
+		userEntity.setAddress(userRegReq.getAddress());
+		/* Encoder Password */
+		String password = bCryptPasswordEncoder.encode(userRegReq.getPassword());
+		userEntity.setPassword(password);
+		return userEntity;
+	}
 
+	/**
+	 * @param UserEntity
+	 * @return UserDetailsResponseDto
+	 */
 	private UserDetailsResponseDto mapUserEntityToUserDetailsResponseDto(UserEntity userEntity) {
 		UserDetailsResponseDto userDetailsResponseDto = new UserDetailsResponseDto();
 		userDetailsResponseDto.setEmail(userEntity.getEmail());
