@@ -55,7 +55,11 @@ public class UserEntity {
 	@Column(name = "session_id")
 	String sessionId;
 
-	@Column(name = "verified")
+	/*
+	 *  true	= The user is registered with the system but OTP authentication is pending.
+	 *  false	= The user is registered with the system and OTP authentication is done.
+	 */
+	@Column(name = "verified", columnDefinition="BOOLEAN DEFAULT false")
 	Boolean verified;
 	
 	@Temporal(TemporalType.TIMESTAMP)
