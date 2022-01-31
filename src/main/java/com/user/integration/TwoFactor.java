@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.user.dto.response.TwoFactorResponse;
 import com.user.entity.PartnerEntity;
 import com.user.entity.UserEntity;
@@ -21,7 +22,7 @@ public class TwoFactor {
 
 	@Autowired
 	private UserRepository userRepo;
-	
+
 	@Autowired
 	private PartnerRepository partnerRepo;
 
@@ -29,13 +30,22 @@ public class TwoFactor {
 
 	public TwoFactorResponse sendingSmsOtp(String phoneNumber) throws Exception {
 		TwoFactorResponse twoFactorResponse = null;
-		/*Get API key from DB*/
+		/* Get API key from DB */
 		String apiKey = getApiKey();
 		/* Sending SMS OTP */
 		String sendingSmsOtpApi = "http://2factor.in/API/V1/" + apiKey + "/SMS/" + phoneNumber + "/AUTOGEN";
-
-		ResponseEntity<TwoFactorResponse> result = restTemplate.getForEntity(sendingSmsOtpApi, TwoFactorResponse.class);
-		twoFactorResponse = result.getBody();
+		ResponseEntity<TwoFactorResponse> result = null;
+		try {
+			result = restTemplate.getForEntity(sendingSmsOtpApi, TwoFactorResponse.class);
+			twoFactorResponse = result.getBody();
+		} catch (Exception e) {
+			String exceptionMsg = e.getMessage();
+			log.info("2factor verify OTP error" + exceptionMsg);
+			String exceptionJsonInString = exceptionMsg.substring(exceptionMsg.indexOf("{"),
+					exceptionMsg.lastIndexOf("}") + 1);
+			twoFactorResponse = new ObjectMapper().readValue(exceptionJsonInString, TwoFactorResponse.class);
+			log.info("Sending SMS OTP Fail twoFactorResponse : " + twoFactorResponse);
+		}
 		if (twoFactorResponse != null) {
 			if ("Success".equals(twoFactorResponse.getStatus())) {
 				log.info("Sussess || twoFactorResponse: " + twoFactorResponse);
@@ -57,18 +67,27 @@ public class TwoFactor {
 		return twoFactorResponse;
 	}
 
-
 	public TwoFactorResponse verifySmsOtp(UserEntity userEntity, String otpInput) throws Exception {
 		TwoFactorResponse twoFactorResponse = null;
-		/*Get API key from DB*/
+		/* Get API key from DB */
 		String apiKey = getApiKey();
 		/* Verify SMS OTP */
-		String verifySmsOtpApi = "http://2factor.in/API/V1/" + apiKey + "/SMS/VERIFY/" + userEntity.getSessionId()
-				+ "/" + otpInput;
+		String verifySmsOtpApi = "http://2factor.in/API/V1/" + apiKey + "/SMS/VERIFY/" + userEntity.getSessionId() + "/"
+				+ otpInput;
 
-		ResponseEntity<TwoFactorResponse> result = restTemplate.getForEntity(verifySmsOtpApi, TwoFactorResponse.class);
-		twoFactorResponse = result.getBody();
-		log.info("Sending SMS OTP twoFactorResponse : " + twoFactorResponse);
+		ResponseEntity<TwoFactorResponse> result = null;
+		try {
+			result = restTemplate.getForEntity(verifySmsOtpApi, TwoFactorResponse.class);
+			twoFactorResponse = result.getBody();
+			log.info("Sending SMS OTP Success twoFactorResponse : " + twoFactorResponse);
+		} catch (Exception e) {
+			String exceptionMsg = e.getMessage();
+			log.info("2factor verify OTP error" + exceptionMsg);
+			String exceptionJsonInString = exceptionMsg.substring(exceptionMsg.indexOf("{"),
+					exceptionMsg.lastIndexOf("}") + 1);
+			twoFactorResponse = new ObjectMapper().readValue(exceptionJsonInString, TwoFactorResponse.class);
+			log.info("Sending SMS OTP Fail twoFactorResponse : " + twoFactorResponse);
+		}
 
 		if (twoFactorResponse != null) {
 			if ("Success".equals(twoFactorResponse.getStatus())) {
@@ -85,11 +104,12 @@ public class TwoFactor {
 		}
 		return twoFactorResponse;
 	}
+
 	private String getApiKey() throws Exception {
-		PartnerEntity partnerEntity = partnerRepo.finaByName(PARTNER_TWO_FACTOR).orElse(null);
-		if(partnerEntity != null) {
+		PartnerEntity partnerEntity = partnerRepo.findByName(PARTNER_TWO_FACTOR).orElse(null);
+		if (partnerEntity != null) {
 			return partnerEntity.getApiKey();
-		}else {
+		} else {
 			throw new Exception(PARTNER_TWO_FACTOR + " partner not present.");
 		}
 	}
