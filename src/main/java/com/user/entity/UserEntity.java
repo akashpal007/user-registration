@@ -59,8 +59,8 @@ public class UserEntity {
 	 *  true	= The user is registered with the system but OTP authentication is pending.
 	 *  false	= The user is registered with the system and OTP authentication is done.
 	 */
-	@Column(name = "verified", columnDefinition="BOOLEAN DEFAULT false")
-	Boolean verified;
+	@Column(name = "verified")
+	Boolean verified = false;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "created_timestamp", updatable = false)

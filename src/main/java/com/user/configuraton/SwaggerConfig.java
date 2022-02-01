@@ -30,7 +30,7 @@ public class SwaggerConfig {
 				.build().apiInfo(apiDetails())
 				.globalRequestParameters(Arrays.asList(new RequestParameterBuilder().in(ParameterType.HEADER)
 						.name("Authorization").description("Description of header")
-						.query(q -> q.model(m -> m.scalarModel(ScalarType.STRING))).required(true).build()));
+						.query(q -> q.model(m -> m.scalarModel(ScalarType.STRING))).required(false).build()));
 	}
 
 	static final String TITLE = "User Registration & Authentication (OTP based)";

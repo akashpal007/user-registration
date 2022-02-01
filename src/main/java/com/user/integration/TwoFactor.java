@@ -5,10 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.user.dto.response.TwoFactorResponse;
 import com.user.entity.PartnerEntity;
 import com.user.entity.UserEntity;
+import com.user.exception.GenericException;
+import com.user.exception.TwoFactorException;
 import com.user.repository.PartnerRepository;
 import com.user.repository.UserRepository;
 
@@ -28,16 +31,19 @@ public class TwoFactor {
 
 	private static final String PARTNER_TWO_FACTOR = "2Factor";
 
-	public TwoFactorResponse sendingSmsOtp(String phoneNumber) throws Exception {
+	private static final String TWO_FACTOR_BASE_URL = "http://2factor.in/API/V1/";
+
+	public TwoFactorResponse sendingSmsOtp(String phoneNumber) throws GenericException, JsonProcessingException {
 		TwoFactorResponse twoFactorResponse = null;
 		/* Get API key from DB */
 		String apiKey = getApiKey();
 		/* Sending SMS OTP */
-		String sendingSmsOtpApi = "http://2factor.in/API/V1/" + apiKey + "/SMS/" + phoneNumber + "/AUTOGEN";
+		String sendingSmsOtpApi = TWO_FACTOR_BASE_URL + apiKey + "/SMS/" + phoneNumber + "/AUTOGEN";
 		ResponseEntity<TwoFactorResponse> result = null;
 		try {
 			result = restTemplate.getForEntity(sendingSmsOtpApi, TwoFactorResponse.class);
 			twoFactorResponse = result.getBody();
+
 		} catch (Exception e) {
 			String exceptionMsg = e.getMessage();
 			log.info("2factor verify OTP error" + exceptionMsg);
@@ -46,6 +52,7 @@ public class TwoFactor {
 			twoFactorResponse = new ObjectMapper().readValue(exceptionJsonInString, TwoFactorResponse.class);
 			log.info("Sending SMS OTP Fail twoFactorResponse : " + twoFactorResponse);
 		}
+
 		if (twoFactorResponse != null) {
 			if ("Success".equals(twoFactorResponse.getStatus())) {
 				log.info("Sussess || twoFactorResponse: " + twoFactorResponse);
@@ -55,24 +62,28 @@ public class TwoFactor {
 
 				if (userEntity != null) {
 					userEntity.setSessionId(twoFactorResponse.getDetails());
+					userRepo.save(userEntity);
 				}
 
 			} else {
 				log.info("Not Sussess ||" + twoFactorResponse.getStatus());
+				throw new GenericException("Something went wrong. Please try again after sometime");
 			}
 		} else {
 			log.info("TwoFactorResponse is null");
+			throw new GenericException("Something went wrong. Please try again after sometime");
 		}
 
 		return twoFactorResponse;
 	}
 
-	public TwoFactorResponse verifySmsOtp(UserEntity userEntity, String otpInput) throws Exception {
+	public TwoFactorResponse verifySmsOtp(UserEntity userEntity, String otpInput)
+			throws GenericException, TwoFactorException, JsonProcessingException {
 		TwoFactorResponse twoFactorResponse = null;
 		/* Get API key from DB */
 		String apiKey = getApiKey();
 		/* Verify SMS OTP */
-		String verifySmsOtpApi = "http://2factor.in/API/V1/" + apiKey + "/SMS/VERIFY/" + userEntity.getSessionId() + "/"
+		String verifySmsOtpApi = TWO_FACTOR_BASE_URL + apiKey + "/SMS/VERIFY/" + userEntity.getSessionId() + "/"
 				+ otpInput;
 
 		ResponseEntity<TwoFactorResponse> result = null;
@@ -98,19 +109,24 @@ public class TwoFactor {
 				userRepo.save(userEntity);
 			} else {
 				log.info("Not Sussess ||" + twoFactorResponse.getStatus());
+				if (twoFactorResponse.getDetails().equals("Invalid APIKey + SessionId combination\n")) {
+					throw new GenericException("Something went wrong. Please try again after sometime");
+				} else {
+					throw new TwoFactorException(twoFactorResponse.getDetails());
+				}
 			}
 		} else {
-			log.info("TwoFactorResponse is null");
+			throw new GenericException("Something went wrong. Please try again after sometime");
 		}
 		return twoFactorResponse;
 	}
 
-	private String getApiKey() throws Exception {
+	private String getApiKey() throws GenericException {
 		PartnerEntity partnerEntity = partnerRepo.findByName(PARTNER_TWO_FACTOR).orElse(null);
 		if (partnerEntity != null) {
 			return partnerEntity.getApiKey();
 		} else {
-			throw new Exception(PARTNER_TWO_FACTOR + " partner not present.");
+			throw new GenericException(PARTNER_TWO_FACTOR + " partner not present.");
 		}
 	}
 }

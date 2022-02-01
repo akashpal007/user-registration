@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.user.common.Util;
 
@@ -36,11 +35,10 @@ public class UserRegistrationRequestDto {
 	String name;
 
 	@NotBlank(message = "Mobile number is mandatory")
-	@Pattern(regexp = Util.VALIDATION_MOBILE_NUMBER_REGEXP)
+	@Pattern(regexp = Util.VALIDATION_MOBILE_NUMBER_REGEXP, message = "Mobile number must be 10 digits")
 	String mobileNumber;
 
 	@NotNull(message = "Date Of Birth is mandatory")
-	@JsonFormat(pattern = Util.DATE_MONTH_YEAR)
 	Date dateOfBirth;
 
 	String address;

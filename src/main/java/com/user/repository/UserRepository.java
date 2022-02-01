@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
 	Optional<UserEntity> findByIdAndVerified(Long userId, Boolean true1);
 
+	Optional<UserEntity> findByEmailOrMobile(String email, String mobileNumber);
+
 }
