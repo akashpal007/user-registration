@@ -28,17 +28,53 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 	String defaultMessage;
 
 	/* <======Project Specific Exceptions======> */
-//	@ExceptionHandler(value = { InvalidOrderDetailsException.class })
-//	public ResponseEntity<Object> handleInvalidOrderDetailsException(InvalidOrderDetailsException ex,
-//			WebRequest request) {
-//
-//		log.info("InvalidOrderDetailsException : " + ex.toString());
-//		ex.printStackTrace();
-//
-//		ErrorDetails exceptionEntity = new ErrorDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
-//				request.getDescription(false), util.getAccountingServiceCurrentDateTime());
-//		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE, request);
-//	}
+	@ExceptionHandler(value = { GenericException.class })
+	public ResponseEntity<Object> handleGenericException(GenericException ex,
+			WebRequest request) {
+
+		log.info("GenericException : " + ex.toString());
+		ex.printStackTrace();
+
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+				request.getDescription(false), new Date());
+		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+	}
+	
+	@ExceptionHandler(value = { TwoFactorException.class })
+	public ResponseEntity<Object> handleTwoFactorException(TwoFactorException ex,
+			WebRequest request) {
+
+		log.info("TwoFactorException : " + ex.toString());
+		ex.printStackTrace();
+
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+				request.getDescription(false), new Date());
+		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+	}
+	
+	@ExceptionHandler(value = { UnauthorizedUserException.class })
+	public ResponseEntity<Object> handleUnauthorizedUserException(UnauthorizedUserException ex,
+			WebRequest request) {
+
+		log.info("UnauthorizedUserException : " + ex.toString());
+		ex.printStackTrace();
+
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+				request.getDescription(false), new Date());
+		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
+	}
+	
+	@ExceptionHandler(value = { UserNotFoundException.class })
+	public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex,
+			WebRequest request) {
+
+		log.info("UserNotFoundException : " + ex.toString());
+		ex.printStackTrace();
+
+		ExceptionDetails exceptionEntity = new ExceptionDetails(ex.getMessage() != null ? ex.getMessage() : defaultMessage,
+				request.getDescription(false), new Date());
+		return handleExceptionInternal(ex, exceptionEntity, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+	}
 
 	/* <======Basic Exceptions======> */
 	@ExceptionHandler(value = { Exception.class })

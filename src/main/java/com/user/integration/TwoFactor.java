@@ -102,16 +102,31 @@ public class TwoFactor {
 
 		if (twoFactorResponse != null) {
 			if ("Success".equals(twoFactorResponse.getStatus())) {
+				/*
+				 * OTP Matched
+				 * OTP Expired
+				 */
+				
 				log.info("Sussess || twoFactorResponse: " + twoFactorResponse);
 
-				/* save verified in user db */
-				userEntity.setVerified(Boolean.TRUE);
-				userRepo.save(userEntity);
+				if(twoFactorResponse.getDetails().equals("OTP Matched")) {					
+					/* save verified in user db */
+					userEntity.setVerified(Boolean.TRUE);
+					userRepo.save(userEntity);
+				}else {
+					throw new TwoFactorException(twoFactorResponse.getDetails());
+				}
 			} else {
 				log.info("Not Sussess ||" + twoFactorResponse.getStatus());
-				if (twoFactorResponse.getDetails().equals("Invalid APIKey + SessionId combination\n")) {
+				if (twoFactorResponse.getDetails().equals("Invalid APIKey + SessionId combination")) {
+					/*
+					 * Invalid API / SessionId Combination - No Entry Exists
+					 */
 					throw new GenericException("Something went wrong. Please try again after sometime");
 				} else {
+					/*
+					 * OTP Mismatch
+					 */
 					throw new TwoFactorException(twoFactorResponse.getDetails());
 				}
 			}
